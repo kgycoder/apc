@@ -735,7 +735,8 @@ function updateNpColor() {
 
     if (S.playing && beat > .04) {
         _beatDirty = true;
-        _beatCards().forEach((card, ci) => {
+        // 카드의 transform/box-shadow 는 매번 페인트를 유발한다 → 50ms 틱 중 2번에 1번(10Hz)만 갱신해 페인트 비용을 절반으로.
+        if ((_beatCount & 1) === 0) _beatCards().forEach((card, ci) => {
             card.classList.add('beat-active');
             const isPlaying = card.classList.contains('playing');
             const phase = Math.sin(BG.f * .06 + ci * 0.72);
