@@ -5454,12 +5454,11 @@ html.bg-mode *, html.bg-mode *::before, html.bg-mode *::after {
     color: #fff;
 }
 
-/* 도크는 전부 네이티브가 터치를 처리한다. DOM 쪽을 터치 불가로 만들어 두면
-   미니 플레이어가 도크 안으로 합쳐져 원래 자리가 비었을 때 그 아래로 탭이 새어 나가지(재생/NP 오작동) 않는다. */
-html.glass-native #mob-nav,
-html.glass-native #mob-nav *,
-html.glass-native #bar,
-html.glass-native #bar * {
+/* 미니 플레이어가 도크 안으로 합쳐져 원래 자리가 비었을 때, 그 아래로 탭이 새어 나가 재생/NP 가 오작동하지 않게 한다. */
+/* 합쳐진 동안에만(glass-bridge.js 의 'dock' 명령이 html.dock-merged 부여) DOM 미니 플레이어의 터치를 막는다.
+   내비 버튼은 건드리지 않는다. */
+html.glass-native.dock-merged #bar,
+html.glass-native.dock-merged #bar * {
     pointer-events: none !important;
 }
 
