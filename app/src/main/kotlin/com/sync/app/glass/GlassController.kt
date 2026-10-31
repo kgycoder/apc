@@ -43,7 +43,32 @@ class GlassController(private val webView: WebView) {
     private var lastNativeY = 0
     private val settle = Runnable { settleTick++ }
 
+    /**
+     * true  = 아래로 스크롤 중 → 하단 도크가 "미니 플레이어 + 홈 / 검색 캡슐" 로 합쳐진 상태.
+     * false = 평상시(탭 캡슐 + 검색 캡슐, 미니 플레이어는 그 위). 위로 스크롤하면 원래대로 돌아온다.
+     * 방향 판정은 WebView.getScrollY() 변화량만 사용한다(JS 왕복 없음, 임계값으로 떨림 방지).
+     */
+    var collapsed by mutableStateOf(false)
+        private set
+    private var dirLastY = 0
+    private var dirAcc = 0f
+
+    fun expand() { dirAcc = 0f; if (collapsed) collapsed = false }
+
+    private fun trackDirection(y: Int) {
+        val d = webView.resources.displayMetrics.density
+        val dy = y - dirLastY
+        dirLastY = y
+        if (y <= 8f * d) { dirAcc = 0f; if (collapsed) collapsed = false; return }
+        if (dy == 0) return
+        if ((dy > 0) != (dirAcc > 0f)) dirAcc = 0f          // 방향이 바뀌면 누적 초기화
+        dirAcc += dy
+        if (!collapsed && dirAcc > 28f * d) collapsed = true
+        else if (collapsed && dirAcc < -14f * d) collapsed = false
+    }
+
     fun onNativeScroll(y: Int) {
+        trackDirection(y)
         if (y != lastNativeY) { lastNativeY = y; settleBias = 0f }   // new scroll → drop any stale correction
         nativeScrollPx = y
         main.removeCallbacks(settle)
