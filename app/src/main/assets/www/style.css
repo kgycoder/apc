@@ -5404,3 +5404,84 @@ html.bg-mode *, html.bg-mode *::before, html.bg-mode *::after {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 }
+
+
+/* ════════════════════════════════════════════════════════
+   APPLE MUSIC 스타일 하단 도크 + 성능 최적화
+   — 도크(탭 캡슐 / 검색 캡슐 / 미니 플레이어)의 유리 표면·컨트롤은 Compose(GlassNav.kt)가 그린다.
+     DOM 의 #mob-nav / #bar 는 "위치·크기·상태의 원천"으로만 남으므로 아래 치수를 네이티브와 맞춘다.
+   — 내비 높이 60 → 54px, 미니 플레이어 64 → 58px (같은 0.9 비율).
+════════════════════════════════════════════════════════ */
+:root {
+    --nav-h: 68px;   /* 캡슐 54px + 바닥 여백 14px */
+    --mini-h: 68px;  /* 미니 플레이어 58px + 여백 (본문 하단 패딩/토스트 위치 계산용, 76 → 68) */
+}
+
+#mob-nav {
+    height: 54px;
+    border-radius: 27px;
+}
+
+#bar {
+    height: 58px;
+    border-radius: 29px;
+}
+
+    #bar .bar-inner {
+        height: 58px;
+        padding: 9px 4px 9px 9px;
+    }
+
+    #bar .bt-art {
+        width: 40px;
+        height: 40px;
+    }
+
+/* 재생/일시정지: 배경 없이 흰색 단색 글리프 (다음곡 버튼과 동일한 방식) */
+.bar-play {
+    width: 38px;
+    height: 38px;
+    background: none;
+    box-shadow: none;
+    color: #fff;
+}
+
+    .bar-play:active {
+        background: none;
+    }
+
+.bar-next {
+    color: #fff;
+}
+
+/* 도크는 전부 네이티브가 터치를 처리한다. DOM 쪽을 터치 불가로 만들어 두면
+   미니 플레이어가 도크 안으로 합쳐져 원래 자리가 비었을 때 그 아래로 탭이 새어 나가지(재생/NP 오작동) 않는다. */
+html.glass-native #mob-nav,
+html.glass-native #mob-nav *,
+html.glass-native #bar,
+html.glass-native #bar * {
+    pointer-events: none !important;
+}
+
+/* ── 성능: 시간이 지날수록 FPS 가 떨어지던 원인 제거 ──────────────────────────────
+   (1) 전체 화면 backdrop-filter: blur(120px) — 배경 캔버스(#bgc)가 계속 다시 그려지는 동안
+       매 프레임 화면 전체를 120px 로 다시 블러한다. 캔버스 오브는 이미 부드러운 방사형 그라디언트라
+       시각 차이는 거의 없고, 가장 비싼 합성 비용이다.
+   (2) 카드마다 붙은 backdrop-filter(즐겨찾기/플레이리스트 추가/길이 칩) — 카드 수에 비례해 backdrop 읽기/블러가
+       늘어나 스크롤·박자 효과 때마다 누적된다. 배경이 이미 55~68% 불투명 검정이라 블러를 빼도 같은 모양이다. */
+html.glass-native .bg-over {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+html.glass-native .c-fav,
+html.glass-native .c-pl-add,
+html.glass-native .c-dur {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* 배경 캔버스는 별도 합성 레이어로 고정해, 캔버스 갱신이 아래/위 DOM 의 다시 그리기를 유발하지 않게 한다. */
+html.glass-native #bgc {
+    will-change: transform;
+}
