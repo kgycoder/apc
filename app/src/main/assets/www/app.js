@@ -49,14 +49,13 @@ function szCvs() {
 }
 addEventListener('resize', szCvs); szCvs();
 
-function triggerBeat() {
-    BG.beat = Math.min(1, BG.beat + 0.85 * (0.3 + BG.energyLevel * 0.7));
-}
+/* 박자 반응 효과 제거: BG.beat 는 항상 0 이므로 배경 플래시/카드/비주얼라이저/NP 펄스·메시 반응이 모두 꺼진다. */
+function triggerBeat() { }
 
 let _beatTimer = null;
 function startBeatTimer(bpm = 120) {
     clearInterval(_beatTimer);
-    _beatTimer = setInterval(() => { if (BG.playing) triggerBeat(); }, 60000 / bpm);
+    _beatTimer = null;   // 박자 타이머 없음
 }
 function stopBeatTimer() { clearInterval(_beatTimer); _beatTimer = null; }
 
