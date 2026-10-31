@@ -85,11 +85,15 @@ fun LiquidBottomTabs(
         val tabWidth = with(density) {
             (constraints.maxWidth.toFloat() - 8f.dp.toPx()) / tabsCount
         }
+        // remember{} 안에서 만든 객체(드래그/하이라이트/오프셋)가 첫 구성 시점의 폭을 계속 쓰면, 폭이 변하는 도크(합체 애니메이션)에서
+        // 드래그 민감도가 어긋난다 → 항상 최신 폭을 읽는다.
+        val tabWidthState = androidx.compose.runtime.rememberUpdatedState(tabWidth)
+        val maxWidthState = androidx.compose.runtime.rememberUpdatedState(constraints.maxWidth)
 
         val offsetAnimation = remember { Animatable(0f) }
         val panelOffset by remember(density) {
             derivedStateOf {
-                val fraction = (offsetAnimation.value / constraints.maxWidth).fastCoerceIn(-1f, 1f)
+                val fraction = (offsetAnimation.value / maxWidthState.value).fastCoerceIn(-1f, 1f)
                 with(density) {
                     4f.dp.toPx() * fraction.sign * EaseOut.transform(abs(fraction))
                 }
@@ -123,7 +127,7 @@ fun LiquidBottomTabs(
                 },
                 onDrag = { _, dragAmount ->
                     updateValue(
-                        (targetValue + dragAmount.x / tabWidth * if (isLtr) 1f else -1f)
+                        (targetValue + dragAmount.x / tabWidthState.value * if (isLtr) 1f else -1f)
                             .fastCoerceIn(0f, (tabsCount - 1).toFloat())
                     )
                     animationScope.launch {
@@ -152,8 +156,8 @@ fun LiquidBottomTabs(
                 animationScope = animationScope,
                 position = { size, offset ->
                     Offset(
-                        if (isLtr) (dampedDragAnimation.value + 0.5f) * tabWidth + panelOffset
-                        else size.width - (dampedDragAnimation.value + 0.5f) * tabWidth + panelOffset,
+                        if (isLtr) (dampedDragAnimation.value + 0.5f) * tabWidthState.value + panelOffset
+                        else size.width - (dampedDragAnimation.value + 0.5f) * tabWidthState.value + panelOffset,
                         size.height / 2f
                     )
                 }
