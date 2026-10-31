@@ -60,13 +60,23 @@ fun GlassRoot(webView: WebView, c: GlassController) {
         }
 
         val s = c.state
+        // 도크 합체(블룹) 진행도: 0 = 평상시, 1 = 미니 플레이어가 도크 중앙으로 합쳐진 상태.
+        // 도크가 잠시 숨겨져 있는 동안(Now Playing 등)에는 값을 유지해서 돌아왔을 때 재생되지 않게 한다.
+        val merge = remember { Animatable(0f) }
+        val wantMerged = c.collapsed && s.bar != null
+        val dockShown = s.nav != null
+        LaunchedEffect(wantMerged, dockShown) {
+            if (!dockShown) return@LaunchedEffect
+            merge.animateTo(if (wantMerged) 1f else 0f, spring(0.62f, 300f, 0.001f))
+        }
         CompositionLocalProvider(LocalGlassAccent provides Color(s.accent)) {
         val dim = s.dialog != null || s.confirm != null || s.add != null
         val chromeAlpha by animateFloatAsState(if (dim) 0.45f else 1f, label = "chromeDim")
 
         Box(if (chromeAlpha < 0.999f) Modifier.fillMaxSize().graphicsLayer { alpha = chromeAlpha } else Modifier.fillMaxSize()) {
-            s.nav?.let { NavGlass(it, backdrop, c) }
-            s.bar?.let { BarGlass(it, backdrop, c) }
+            val nav = s.nav
+            if (nav != null) DockGlass(nav, s.bar, backdrop, c, merge)
+            else s.bar?.let { BarGlass(it, backdrop, c) }          // 가로 모드 등 도크가 없을 때
             s.search?.let { SearchGlass(it, backdrop, c) }
         }
         s.ctx?.let { ContextMenuGlass(it, backdrop, c) }
