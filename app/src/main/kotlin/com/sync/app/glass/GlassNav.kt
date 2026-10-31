@@ -57,7 +57,7 @@ private val TabLabels = listOf("홈", "즐겨찾기", "대기열", "플레이리
 private val TabDom = intArrayOf(0, 2, 3, 4)
 private val TabViews = listOf("home", "fav", "queue", "playlists")
 private const val DOM_SEARCH = 1
-private const val GAP = 10f          // 탭 캡슐 ↔ 검색 캡슐 (CSS px == dp)
+private const val GAP = 14f          // 탭 캡슐 ↔ 검색 캡슐 (CSS px == dp)
 private const val MERGED_GAP = 8f    // 합쳐졌을 때 가운데 플레이어 ↔ 좌우 캡슐
 
 private class Px(val x: Float, val y: Float, val w: Float, val h: Float)
