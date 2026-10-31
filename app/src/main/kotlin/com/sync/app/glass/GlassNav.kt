@@ -155,21 +155,23 @@ internal fun DockGlass(
                     }
                 }
             }
-            // 합쳐진 상태의 '홈' 글리프 + 탭 (탭 4개 위를 덮어 홈으로만 동작)
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { alpha = ((merge.value - 0.35f) * 2.5f).coerceIn(0f, 1f) }
-                    .tap(enabled = homeTappable) {
-                        c.expand(); c.cmd { put("t", "nav"); put("v", "home") }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(Modifier.size(24.dp)) {
-                    strokeIcon(
-                        GlassIcons.Home, 20f,
-                        if (nav.active == 0) accent else GlassTheme.Content.copy(0.85f), 1.6f
-                    )
+            // 합쳐진 상태의 '홈' 글리프 + 탭 (합쳐졌을 때만 구성 → 평상시 탭 터치에 영향 없음)
+            if (homeTappable) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .graphicsLayer { alpha = ((merge.value - 0.35f) * 2.5f).coerceIn(0f, 1f) }
+                        .tap {
+                            c.expand(); c.cmd { put("t", "nav"); put("v", "home") }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(Modifier.size(24.dp)) {
+                        strokeIcon(
+                            GlassIcons.Home, 20f,
+                            if (nav.active == 0) accent else GlassTheme.Content.copy(0.85f), 1.6f
+                        )
+                    }
                 }
             }
         }
