@@ -5468,9 +5468,10 @@ html.glass-native.dock-merged #bar * {
        시각 차이는 거의 없고, 가장 비싼 합성 비용이다.
    (2) 카드마다 붙은 backdrop-filter(즐겨찾기/플레이리스트 추가/길이 칩) — 카드 수에 비례해 backdrop 읽기/블러가
        늘어나 스크롤·박자 효과 때마다 누적된다. 배경이 이미 55~68% 불투명 검정이라 블러를 빼도 같은 모양이다. */
+/* 120px → 16px: 절반 해상도 캔버스를 2배로 늘리면 그라디언트 디더링이 점 격자로 보이는데, 가벼운 블러로 지운다. */
 html.glass-native .bg-over {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    backdrop-filter: blur(16px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
 }
 
 html.glass-native .c-fav,
