@@ -5481,6 +5481,4 @@ html.glass-native .c-dur {
 }
 
 /* 배경 캔버스는 별도 합성 레이어로 고정해, 캔버스 갱신이 아래/위 DOM 의 다시 그리기를 유발하지 않게 한다. */
-html.glass-native #bgc {
-    will-change: transform;
-}
+/* (will-change 로 큰 캔버스를 별도 타일 레이어로 올리면 타일 경계가 격자 무늬로 보여 제거) */
