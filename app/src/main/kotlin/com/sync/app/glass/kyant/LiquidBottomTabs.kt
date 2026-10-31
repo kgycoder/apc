@@ -67,6 +67,7 @@ fun LiquidBottomTabs(
     modifier: Modifier = Modifier,
     height: Dp = 64f.dp,
     indicatorAlpha: () -> Float = { 1f },
+    indicatorInteractive: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     val isLightTheme = false
@@ -237,8 +238,13 @@ fun LiquidBottomTabs(
                         if (isLtr) dampedDragAnimation.value * tabWidth + panelOffset
                         else size.width - (dampedDragAnimation.value + 1f) * tabWidth + panelOffset
                 }
-                .then(interactiveHighlight.gestureModifier)
-                .then(dampedDragAnimation.modifier)
+                .then(
+                    // 인디케이터가 숨겨진 동안(검색 화면)에는 터치를 가로채지 않아, 그 아래 탭(홈 등)이 눌린다.
+                    if (indicatorInteractive) Modifier
+                        .then(interactiveHighlight.gestureModifier)
+                        .then(dampedDragAnimation.modifier)
+                    else Modifier
+                )
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(backdrop, tabsBackdrop),
                     shape = { Capsule() },
