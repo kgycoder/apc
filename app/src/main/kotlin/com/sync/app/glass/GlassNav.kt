@@ -137,6 +137,7 @@ internal fun DockGlass(
                 accentColor = accent,
                 modifier = Modifier.fillMaxSize(),
                 height = h.dp,
+                indicatorInteractive = !searchActive,
                 indicatorAlpha = { indicatorShown * (1f - merge.value * 2.2f).coerceIn(0f, 1f) }
             ) {
                 repeat(TabLabels.size) { index ->
