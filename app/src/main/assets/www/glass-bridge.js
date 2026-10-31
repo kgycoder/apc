@@ -275,6 +275,10 @@
     window.__glassCmd = function (c) {
         try {
             switch (c.t) {
+                case 'dock': {
+                    document.documentElement.classList.toggle('dock-merged', !!c.m);
+                    break;
+                }
                 case 'nav': {
                     const b = document.querySelector('#mob-nav .mn-btn[data-v="' + c.v + '"]');
                     if (b) b.click();
