@@ -65,6 +65,7 @@ fun GlassRoot(webView: WebView, c: GlassController) {
         val merge = remember { Animatable(0f) }
         val wantMerged = c.collapsed && s.bar != null
         val dockShown = s.nav != null
+        LaunchedEffect(wantMerged) { c.cmd { put("t", "dock"); put("m", wantMerged) } }
         LaunchedEffect(wantMerged, dockShown) {
             if (!dockShown) return@LaunchedEffect
             merge.animateTo(if (wantMerged) 1f else 0f, spring(0.62f, 300f, 0.001f))
