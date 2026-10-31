@@ -34,6 +34,14 @@
         return !!(t.closest && t.closest('#pl-dialog-overlay,#pl-confirm-overlay,#pl-add-modal-overlay'));
     }
 
+    /** 하단 도크(내비/미니 플레이어): 이제 DOM 요소는 터치를 받지 않으므로(pointer-events:none) 히트 테스트가 아니라
+     *  "레이아웃 상 보이는지 + Now Playing 에 덮여 있지 않은지" 만 확인한다. */
+    function docked(el) {
+        if (npEl && npEl.classList.contains('on')) return false;
+        const r = el.getBoundingClientRect();
+        return r.width >= 2 && r.height >= 2 && r.bottom > 0 && r.top < innerHeight;
+    }
+
     /** 고정 중앙 정렬 박스: 등장 애니메이션(scale)에 영향받지 않도록 레이아웃 크기 + 중심 좌표 사용 */
     function stableBox(el) {
         const r = el.getBoundingClientRect();
@@ -91,7 +99,7 @@
 
         /* 하단 내비 */
         const nav = $('mob-nav');
-        if (nav && exposed(nav)) {
+        if (nav && docked(nav)) {
             const btns = Array.from(nav.querySelectorAll('.mn-btn'));
             st.nav = { r: box(nav.getBoundingClientRect()), active: Math.max(0, btns.findIndex(b => b.classList.contains('on'))) };
         }
@@ -112,7 +120,7 @@
 
         /* 미니 플레이어 */
         const bar = $('bar');
-        if (bar && !bar.classList.contains('bar-hidden') && exposed(bar)) {
+        if (bar && !bar.classList.contains('bar-hidden') && docked(bar)) {
             const art = $('b-art');
             st.bar = {
                 r: box(bar.getBoundingClientRect()),
@@ -211,9 +219,21 @@
         }
         if (burst) kick(); else if (once) kick(450);
     });
+    /* style 속성은 body 전체가 아니라 글래스와 관련된 호스트에서만 관찰한다.
+       박자 효과(카드 transform/box-shadow, 비주얼라이저 막대, 시크바 등)는 재생 중 초당 수십~수백 번 style 을
+       바꾸는데, body 전체를 관찰하면 그때마다 MutationRecord 가 쌓여 메인 스레드를 계속 점유한다(시간이 지날수록
+       프레임이 떨어지던 원인 중 하나). class/src/placeholder 는 이전과 동일하게 전체를 관찰한다. */
     mo.observe(document.body, {
         subtree: true, childList: true, characterData: true,
-        attributes: true, attributeFilter: ['class', 'style', 'src', 'placeholder']
+        attributes: true, attributeFilter: ['class', 'src', 'placeholder']
+    });
+    ['#pl-ctx-menu', '#pl-dialog-overlay', '#pl-confirm-overlay', '#pl-add-modal-overlay'].forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) mo.observe(el, { subtree: true, attributes: true, attributeFilter: ['style'] });
+    });
+    ['#bar', '#mob-nav'].forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) mo.observe(el, { attributes: true, attributeFilter: ['style'] });
     });
 
     /* 스크롤: 위치 계산은 네이티브가 WebView.getScrollY() 로 직접 한다(같은 프레임, JS 왕복 없음).
